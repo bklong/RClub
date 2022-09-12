@@ -1,0 +1,1649 @@
+run lobstr
+
+    library(lobstr)
+
+    ## Warning: package 'lobstr' was built under R version 4.1.3
+
+    knitr::opts_chunk$set(echo = TRUE)
+
+Ch. 3: Vectors
+
+3.1 Introduction
+
+atomic vectors: all elements must have the same type lists: elements can
+have different types NULL: not a vector, general “zero length” vector
+
+attribute: named list of arbitrary metadata -every vector can have
+attributes
+
+two important attributes are dimension and class dimension: turns
+vectors into matrices and arrays class: powers S3 object system -
+important S3 vectors: factors, date and times, data frames, and tibbles
+
+3.2 Atomic Vectors
+
+four primary types of atomic vectors: logical, integer, double, and
+character (which contains strings) -integer and double vectors are both
+numeric vectors -complex and raw vectors are rare and needed only in
+certain cases
+
+3.2.1 Scalars
+
+scalar: special syntax to create an individual value
+
+Logicals: written in full (TRUE or FALSE), or abbreviated (T or F).
+Doubles: specified in decimal (0.1234), scientific (1.23e4), or
+hexadecimal (0xcafe) form. There are three special values unique to
+doubles: Inf, -Inf, and NaN (not a number). These are special values
+defined by the floating point standard. Integers: written similarly to
+doubles but must be followed by L23 (1234L, 1e4L, or 0xcafeL), and can
+not contain fractional values. Strings: surrounded by ” (“hi”) or ’
+(‘bye’). Special characters are escaped with ; see ?Quotes for full
+details.
+
+3.2.2 Making Longer Vectors with c()
+
+c(): short for combine, makes longer vectors from shorter ones
+
+When the inputs are atomic vectors, c() always creates another atomic
+vector; i.e. it flattens:
+
+    lgl_var <- c(TRUE, FALSE)
+    int_var <- c(1L, 6L, 10L)
+    dbl_var <- c(1, 2.5, 4.5)
+    chr_var <- c("these are", "some strings")
+
+Kyle’s example of c() flattening:
+
+    lgl_var <- c(TRUE, FALSE)
+    int_nested_var <- c(c(1L,2L), c(3L,4L))
+    obj_addr(c(1L, 2L))
+
+    ## [1] "0x142348f0"
+
+    obj_addr(c(3L, 4L))
+
+    ## [1] "0x13adc378"
+
+    obj_addr(c(c(1L, 2L), c(3L, 4L)))
+
+    ## [1] "0x141d4af0"
+
+    typeof(lgl_var)
+
+    ## [1] "logical"
+
+    typeof(int_nested_var)
+
+    ## [1] "integer"
+
+c() puts the vectors in a new location where they are both located,
+rather than two separate locations
+
+use tpeof() to determine the type of vector and length() to determine
+its length:
+
+    typeof(lgl_var)
+
+    ## [1] "logical"
+
+    #> [1] "logical"
+    typeof(int_var)
+
+    ## [1] "integer"
+
+    #> [1] "integer"
+    typeof(dbl_var)
+
+    ## [1] "double"
+
+    #> [1] "double"
+    typeof(chr_var)
+
+    ## [1] "character"
+
+    #> [1] "character"
+
+3.2.3 Missing Values
+
+NA: missing or unknown values -most computations involving a missing
+value will return another missing value (be careful)
+
+    NA > 5
+
+    ## [1] NA
+
+    #> [1] NA
+    10 * NA
+
+    ## [1] NA
+
+    #> [1] NA
+    !NA
+
+    ## [1] NA
+
+    #> [1] NA
+
+only a few exceptions to this rule, which occur when some identity holds
+for all possible inputs:
+
+    NA ^ 0
+
+    ## [1] 1
+
+    #> [1] 1
+    NA | TRUE
+
+    ## [1] TRUE
+
+    #> [1] TRUE
+    NA & FALSE
+
+    ## [1] FALSE
+
+    #> [1] FALSE
+
+Propagation of missingness leads to a common mistake when determining
+which values in a vector are missing:
+
+    x <- c(NA, 5, NA, 10)
+    x == NA
+
+    ## [1] NA NA NA NA
+
+    #> [1] NA NA NA NA
+
+This result is correct (if a little surprising) because there’s no
+reason to believe that one missing value has the same value as another.
+Instead, use is.na() to test for the presence of missingness:
+
+    is.na(x)
+
+    ## [1]  TRUE FALSE  TRUE FALSE
+
+    #> [1]  TRUE FALSE  TRUE FALSE
+
+3.2.4 Testing and Coercion
+
+You can test if a vector is a given type with an is.\*() function. ex:
+is.logical(), is.integer(), is.double(), is.character(), but not
+is.vector(), is.atomic(), and is.numeric().
+
+As a reminder, atomic vectors must have elements all of the same type.
+If they are not the same type, they will be coerced in a fixed order:
+character –&gt; double –&gt; integer –&gt; logical. For example,
+combining a character and an integer yields a character:
+
+    str(c("a", 1))
+
+    ##  chr [1:2] "a" "1"
+
+    #>  chr [1:2] "a" "1"
+
+Character is first in the order of vectors that will be coerced when
+mixed elements are used in an atomic vector. This is why the above
+results in a character even though an integer was also combined with it.
+
+Coercion happens automatically.
+
+Most math functions (ex: +, log, abs, etc) will coerce to numeric. This
+is useful for logical vectors because true becomes 1 and false becomes
+0.
+
+    x <- c(FALSE, FALSE, TRUE)
+    as.numeric(x)
+
+    ## [1] 0 0 1
+
+    #> [1] 0 0 1
+
+    # Total number of TRUEs
+    sum(x)
+
+    ## [1] 1
+
+    #> [1] 1
+
+    # Proportion that are TRUE
+    mean(x)
+
+    ## [1] 0.3333333
+
+    #> [1] 0.333
+
+You can deliberately coerce by using an as.\*() function. Failed
+coercion of strings creates a warning and missing value:
+
+    as.integer(c("1", "1.5", "a"))
+
+    ## Warning: NAs introduced by coercion
+
+    ## [1]  1  1 NA
+
+    #> Warning: NAs introduced by coercion
+    #> [1]  1  1 NA
+
+3.2.5 Exercises
+
+1.  How do you create raw and complex scalars?
+
+<!-- -->
+
+    ?raw
+
+    ## starting httpd help server ... done
+
+    ?complex
+
+1.  Test your knowledge of the vector coercion rules by predicting the
+    output of the following uses of c():
+
+c(1, FALSE) –&gt; 1, 0 (logical has less priority than double, so
+coercion makes them both \#s) c(“a”, 1) –&gt; “a”, “1” (character has
+top priority for coercion) c(TRUE, 1L) –&gt; 1, 1 (logical has less
+priority than integer)
+
+    c(1, FALSE)
+
+    ## [1] 1 0
+
+    c("a", 1)
+
+    ## [1] "a" "1"
+
+    c(TRUE, 1L)
+
+    ## [1] 1 1
+
+1.  Why is 1 == “1” true? Why is -1 &lt; FALSE true? Why is “one” &lt; 2
+    false? 1 will be coerced into “1” since character takes priority.
+    “1” = “1” FALSE will be coerced into 0 since math vectors change
+    logical to integer. -1 &lt; 0 2 will be coerced to “2” since
+    character takes priority, but “one” /&lt;/ “2” (these are characters
+    not numbers!)
+
+<!-- -->
+
+    1 == "1"
+
+    ## [1] TRUE
+
+    -1 < FALSE
+
+    ## [1] TRUE
+
+    "one" < 2
+
+    ## [1] FALSE
+
+1.  Why is the default missing value, NA, a logical vector? What’s
+    special about logical vectors? (Hint: think about c(FALSE,
+    NA\_character\_))
+
+Logical vectors have the least priority in coercion. NULL is also
+essentially 0, or a vector with no length, and in this sense, is most
+similar to FALSE/0, as in a logical vector. I’m not sure what is special
+about logical vectors other than the fact that they only have 1/0 and
+TRUE/FALSE options.
+
+    c(FALSE, NA_character_) 
+
+    ## [1] "FALSE" NA
+
+1.  Precisely what do is.atomic(), is.numeric(), and is.vector() test
+    for? is.atomic, is.numeric, and is.vector test to see if the given
+    vector is of the specified mode with only names. TRUE = this is
+    true, FALSE = anything other than the correct mode with only names.
+
+3.3 Attributes
+
+-data structures like matrices, arrays, factors, date-times, etc are
+built on top of atomic vectors by adding attributes
+
+3.3.1 Getting and Setting
+
+attributes: name-value pairs that attach metadata to an object attr():
+retrieves and modifies individual attributes attributes(): retrieves
+attribues en masse structure(): sets attributes en masse
+
+    a <- 1:3
+    attr(a, "x") <- "abcdef"
+    attr(a, "x")
+
+    ## [1] "abcdef"
+
+    #> [1] "abcdef"
+
+    attr(a, "y") <- 4:6
+    str(attributes(a))
+
+    ## List of 2
+    ##  $ x: chr "abcdef"
+    ##  $ y: int [1:3] 4 5 6
+
+    #> List of 2
+    #>  $ x: chr "abcdef"
+    #>  $ y: int [1:3] 4 5 6
+
+    # Or equivalently
+    a <- structure(
+      1:3, 
+      x = "abcdef",
+      y = 4:6
+    )
+    str(attributes(a))
+
+    ## List of 2
+    ##  $ x: chr "abcdef"
+    ##  $ y: int [1:3] 4 5 6
+
+    #> List of 2
+    #>  $ x: chr "abcdef"
+    #>  $ y: int [1:3] 4 5 6
+
+Most attributes are lost by most operations:
+
+    attributes(a[1])
+
+    ## NULL
+
+    #> NULL
+    attributes(sum(a))
+
+    ## NULL
+
+    #> NULL
+
+names: a character vector giving each element a name, an attribute that
+is routinely preserved dim: (short for dimensions) an integer vector
+that is used to turn vectors into matrices or arrays, an attribute that
+is routinely preserved -other attributes must be preserved by creating
+your own S3 class (ch. 13)
+
+3.3.2 Names
+
+There are three ways to name a vector.
+
+    # When creating it: 
+    x <- c(a = 1, b = 2, c = 3)
+
+    # By assigning a character vector to names()
+    x <- 1:3
+    names(x) <- c("a", "b", "c")
+
+    # Inline, with setNames():
+    x <- setNames(1:3, c("a", "b", "c"))
+
+Avoid using attr(x, “names”). It requires more typing and is less
+readable than names(x). You can remove names from a vector by using x
+&lt;- unname(x) or names(x) &lt;- NULL. Names should be unique and
+non-missing.
+
+3.3.3 Dimensions
+
+-Adding a dim attribute to a vector allows it to behave like a
+2-dimensional matrix or multi-dimensional array. Matrices and arrays can
+be created with matrix() and array() by using the assignment form of
+dim().
+
+    # Two scalar arguments specify row and column sizes
+    x <- matrix(1:6, nrow = 2, ncol = 3)
+    x
+
+    ##      [,1] [,2] [,3]
+    ## [1,]    1    3    5
+    ## [2,]    2    4    6
+
+    #>      [,1] [,2] [,3]
+    #> [1,]    1    3    5
+    #> [2,]    2    4    6
+
+    # One vector argument to describe all dimensions
+    y <- array(1:12, c(2, 3, 2))
+    y
+
+    ## , , 1
+    ## 
+    ##      [,1] [,2] [,3]
+    ## [1,]    1    3    5
+    ## [2,]    2    4    6
+    ## 
+    ## , , 2
+    ## 
+    ##      [,1] [,2] [,3]
+    ## [1,]    7    9   11
+    ## [2,]    8   10   12
+
+    #> , , 1
+    #> 
+    #>      [,1] [,2] [,3]
+    #> [1,]    1    3    5
+    #> [2,]    2    4    6
+    #> 
+    #> , , 2
+    #> 
+    #>      [,1] [,2] [,3]
+    #> [1,]    7    9   11
+    #> [2,]    8   10   12
+
+    # You can also modify an object in place by setting dim()
+    z <- 1:6
+    dim(z) <- c(3, 2)
+    z
+
+    ##      [,1] [,2]
+    ## [1,]    1    4
+    ## [2,]    2    5
+    ## [3,]    3    6
+
+    #>      [,1] [,2]
+    #> [1,]    1    4
+    #> [2,]    2    5
+    #> [3,]    3    6
+
+A vector without a dim attribute is often thought of as 1-dimensional,
+but actually has NULL dimensions. You also can have matrices with a
+single row or single column, or arrays with a single dimension. They may
+print similarly, but will behave differently. The differences aren’t too
+important, but it’s useful to know they exist in case you get strange
+output from a function (tapply() is a frequent offender). As always, use
+str() to reveal the differences.
+
+    str(1:3)                   # 1d vector
+
+    ##  int [1:3] 1 2 3
+
+    #>  int [1:3] 1 2 3
+    str(matrix(1:3, ncol = 1)) # column vector
+
+    ##  int [1:3, 1] 1 2 3
+
+    #>  int [1:3, 1] 1 2 3
+    str(matrix(1:3, nrow = 1)) # row vector
+
+    ##  int [1, 1:3] 1 2 3
+
+    #>  int [1, 1:3] 1 2 3
+    str(array(1:3, 3))         # "array" vector
+
+    ##  int [1:3(1d)] 1 2 3
+
+    #>  int [1:3(1d)] 1 2 3
+
+3.3.4 Exercises
+
+1.  How is setNames() implemented? How is unname() implemented? Read the
+    source code.
+
+setNames() helps set names after entering data for convenience. Unname()
+can unname objects in case of mistake or otherwise.
+
+1.  What does dim() return when applied to a 1-dimensional vector? When
+    might you use NROW() or NCOL()?
+
+<!-- -->
+
+    dim(c(1,2,3))
+
+    ## NULL
+
+The output is NULL (dimensions are only valid at the 2D level
+essentially). NROW and NCOL would be used at 2D or higher.
+
+1.  How would you describe the following three objects? What makes them
+    different from 1:5?
+
+<!-- -->
+
+    x1 <- array(1:5, c(1, 1, 5))
+    x2 <- array(1:5, c(1, 5, 1))
+    x3 <- array(1:5, c(5, 1, 1))
+
+They differ by which row has the 5 digit space in it.
+
+1.  An early draft used this code to illustrate structure():
+
+<!-- -->
+
+    structure(1:5, comment = "my attribute")
+
+    ## [1] 1 2 3 4 5
+
+    #> [1] 1 2 3 4 5
+
+    ?comment
+
+But when you print that object you don’t see the comment attribute. Why?
+Is the attribute missing, or is there something else special about it?
+(Hint: try using help)
+
+Comment is used for a human comment (a note to read later), but not
+something that can be used in the code.
+
+3.4 S3 Atomic Vectors
+
+-one of the most important vector attributes is class -having a class
+attribute turns an oject into an S3 object
+
+Four important S3 vectors used in base R: categorical data, where values
+come from a fixed set of levels recorded in factor vectors. Dates (with
+day resolution), which are recorded in Date vectors. Date-times (with
+second or sub-second resolution), which are stored in POSIXct vectors.
+Durations, which are stored in difftime vectors.
+
+3.4.1 Factors
+
+factor: a vector that can only contain predefined values, used to store
+categorical data. They are built on top of an integer vector with two
+attributes: class and levels.
+
+    x <- factor(c("a", "b", "b", "a"))
+    x
+
+    ## [1] a b b a
+    ## Levels: a b
+
+    #> [1] a b b a
+    #> Levels: a b
+
+    typeof(x)
+
+    ## [1] "integer"
+
+    #> [1] "integer"
+    attributes(x)
+
+    ## $levels
+    ## [1] "a" "b"
+    ## 
+    ## $class
+    ## [1] "factor"
+
+    #> $levels
+    #> [1] "a" "b"
+    #> 
+    #> $class
+    #> [1] "factor"
+
+Factors are useful when you know the set of possible values but they’re
+not all present in a given dataset. In contrast to a character vector,
+when you tabulate a factor you’ll get counts of all categories, even
+unobserved ones.
+
+    sex_char <- c("m", "m", "m")
+    sex_factor <- factor(sex_char, levels = c("m", "f"))
+
+    table(sex_char)
+
+    ## sex_char
+    ## m 
+    ## 3
+
+    #> sex_char
+    #> m 
+    #> 3
+    table(sex_factor)
+
+    ## sex_factor
+    ## m f 
+    ## 3 0
+
+    #> sex_factor
+    #> m f 
+    #> 3 0
+
+Ordered factors: behave like regular factors, but the order of the
+levels is meaningful (low, med, high)
+
+    grade <- ordered(c("b", "b", "a", "c"), levels = c("c", "b", "a"))
+    grade
+
+    ## [1] b b a c
+    ## Levels: c < b < a
+
+    #> [1] b b a c
+    #> Levels: c < b < a
+
+-in base R, you tend to encounter factors frequently because many
+functions (like read.csv() and data.frame()) automatically convert
+character vectors to factors. Use the argument stringsAsFactors = FALSE
+to suppress this behaviour, and then manually convert character vectors
+to factors using your knowledge of the “theoretical” data. -factors look
+and often behave like character vectors, but are built on top of
+integers.
+
+3.4.2 Dates
+
+Date vectors are built on top of double vectors. They have class “date”
+and no other attributes.
+
+    today <- Sys.Date()
+
+    typeof(today)
+
+    ## [1] "double"
+
+    #> [1] "double"
+    attributes(today)
+
+    ## $class
+    ## [1] "Date"
+
+    #> $class
+    #> [1] "Date"
+
+The value of the double (which can be seen by stripping the class),
+represents the number of days since 1970-01-01.
+
+    date <- as.Date("1970-02-01")
+    unclass(date)
+
+    ## [1] 31
+
+    #> [1] 31
+
+3.4.3 Date-Times
+
+Two ways of storing date-time information: POSIXct and POSIXIt.
+
+    now_ct <- as.POSIXct("2018-08-01 22:00", tz = "UTC")
+    now_ct
+
+    ## [1] "2018-08-01 22:00:00 UTC"
+
+    #> [1] "2018-08-01 22:00:00 UTC"
+
+    typeof(now_ct)
+
+    ## [1] "double"
+
+    #> [1] "double"
+    attributes(now_ct)
+
+    ## $class
+    ## [1] "POSIXct" "POSIXt" 
+    ## 
+    ## $tzone
+    ## [1] "UTC"
+
+    #> $class
+    #> [1] "POSIXct" "POSIXt" 
+    #> 
+    #> $tzone
+    #> [1] "UTC"
+
+The tzone attribue controls only how the date-time is formatted. It does
+not control the instant of time represented by the vector. Note that the
+time is not printed if it is midnight.
+
+    structure(now_ct, tzone = "Asia/Tokyo")
+
+    ## [1] "2018-08-02 07:00:00 JST"
+
+    #> [1] "2018-08-02 07:00:00 JST"
+    structure(now_ct, tzone = "America/New_York")
+
+    ## [1] "2018-08-01 18:00:00 EDT"
+
+    #> [1] "2018-08-01 18:00:00 EDT"
+    structure(now_ct, tzone = "Australia/Lord_Howe")
+
+    ## [1] "2018-08-02 08:30:00 +1030"
+
+    #> [1] "2018-08-02 08:30:00 +1030"
+    structure(now_ct, tzone = "Europe/Paris")
+
+    ## [1] "2018-08-02 CEST"
+
+    #> [1] "2018-08-02 CEST"
+
+3.4.4 Durations
+
+duration: amount of time between pairs of dates or date-times, stored in
+difftimes difftimes: built on top of doubles and have a units attribute
+
+    one_week_1 <- as.difftime(1, units = "weeks")
+    one_week_1
+
+    ## Time difference of 1 weeks
+
+    #> Time difference of 1 weeks
+
+    typeof(one_week_1)
+
+    ## [1] "double"
+
+    #> [1] "double"
+    attributes(one_week_1)
+
+    ## $class
+    ## [1] "difftime"
+    ## 
+    ## $units
+    ## [1] "weeks"
+
+    #> $class
+    #> [1] "difftime"
+    #> 
+    #> $units
+    #> [1] "weeks"
+
+    one_week_2 <- as.difftime(7, units = "days")
+    one_week_2
+
+    ## Time difference of 7 days
+
+    #> Time difference of 7 days
+
+    typeof(one_week_2)
+
+    ## [1] "double"
+
+    #> [1] "double"
+    attributes(one_week_2)
+
+    ## $class
+    ## [1] "difftime"
+    ## 
+    ## $units
+    ## [1] "days"
+
+    #> $class
+    #> [1] "difftime"
+    #> 
+    #> $units
+    #> [1] "days"
+
+3.4.5 Exercises
+
+1.  What sort of object does table() return? What is its type? What
+    attributes does it have? How does the dimensionality change as you
+    tabulate more variables?
+
+<!-- -->
+
+    typeof(table("a", "b"))
+
+    ## [1] "integer"
+
+    attributes(table("a","b", "c"))
+
+    ## $dim
+    ## [1] 1 1 1
+    ## 
+    ## $dimnames
+    ## $dimnames[[1]]
+    ## [1] "a"
+    ## 
+    ## $dimnames[[2]]
+    ## [1] "b"
+    ## 
+    ## $dimnames[[3]]
+    ## [1] "c"
+    ## 
+    ## 
+    ## $class
+    ## [1] "table"
+
+    attributes(table(c(1,2), c(1,2), c(1,2)))
+
+    ## $dim
+    ## [1] 2 2 2
+    ## 
+    ## $dimnames
+    ## $dimnames[[1]]
+    ## [1] "1" "2"
+    ## 
+    ## $dimnames[[2]]
+    ## [1] "1" "2"
+    ## 
+    ## $dimnames[[3]]
+    ## [1] "1" "2"
+    ## 
+    ## 
+    ## $class
+    ## [1] "table"
+
+Table() returns an integer. Attributes are dimensions and class. As you
+tabulate more objects, it increases in rows. 1, then 1 1, then 1 1 1,
+etc.
+
+1.  What happens to a factor when you modify its levels? ?
+
+<!-- -->
+
+    f1 <- factor(letters)
+    levels(f1) <- rev(levels(f1))
+
+1.  What does this code do? How do f2 and f3 differ from f1? ?
+
+<!-- -->
+
+    f2 <- rev(factor(letters))
+
+    f3 <- factor(letters, levels = rev(letters))
+
+    f1
+
+    ##  [1] z y x w v u t s r q p o n m l k j i h g f e d c b a
+    ## Levels: z y x w v u t s r q p o n m l k j i h g f e d c b a
+
+    f2
+
+    ##  [1] z y x w v u t s r q p o n m l k j i h g f e d c b a
+    ## Levels: a b c d e f g h i j k l m n o p q r s t u v w x y z
+
+    f3
+
+    ##  [1] a b c d e f g h i j k l m n o p q r s t u v w x y z
+    ## Levels: z y x w v u t s r q p o n m l k j i h g f e d c b a
+
+3.5 Lists
+
+lists: a step up in complexity from atomic vectors: each element can be
+any type, not just vectors. Technically speaking, each element of a list
+is actually the same type because, as you saw in Section 2.3.3, each
+element is really a reference to another object, which can be any type.
+
+3.5.1 Creating
+
+list(): construct a list
+
+    l1 <- list(
+      1:3, 
+      "a", 
+      c(TRUE, FALSE, TRUE), 
+      c(2.3, 5.9)
+    )
+
+    typeof(l1)
+
+    ## [1] "list"
+
+    #> [1] "list"
+
+    str(l1)
+
+    ## List of 4
+    ##  $ : int [1:3] 1 2 3
+    ##  $ : chr "a"
+    ##  $ : logi [1:3] TRUE FALSE TRUE
+    ##  $ : num [1:2] 2.3 5.9
+
+    #> List of 4
+    #>  $ : int [1:3] 1 2 3
+    #>  $ : chr "a"
+    #>  $ : logi [1:3] TRUE FALSE TRUE
+    #>  $ : num [1:2] 2.3 5.9
+
+Because the elements of a list are references, creating a list does not
+involve copying the components into the list. For this reason, the total
+size of a list might be smaller than you might expect.
+
+    lobstr::obj_size(mtcars)
+
+    ## 7.21 kB
+
+    #> 7,208 B
+
+    l2 <- list(mtcars, mtcars, mtcars, mtcars)
+    lobstr::obj_size(l2)
+
+    ## 7.29 kB
+
+    #> 7,288 B
+
+Lists are sometimes called recursive vectors because a list can contain
+other lists. This makes them fundamentally different from atomic
+vectors.
+
+    l3 <- list(list(list(1)))
+    str(l3)
+
+    ## List of 1
+    ##  $ :List of 1
+    ##   ..$ :List of 1
+    ##   .. ..$ : num 1
+
+    #> List of 1
+    #>  $ :List of 1
+    #>   ..$ :List of 1
+    #>   .. ..$ : num 1
+
+c() will combine several lists into one. If given a combination of
+atomic vectors and lists, c() will coerce the vectors to lists before
+combining them. Compare the results of list() and c():
+
+    l4 <- list(list(1, 2), c(3, 4))
+    l5 <- c(list(1, 2), c(3, 4))
+    str(l4)
+
+    ## List of 2
+    ##  $ :List of 2
+    ##   ..$ : num 1
+    ##   ..$ : num 2
+    ##  $ : num [1:2] 3 4
+
+    #> List of 2
+    #>  $ :List of 2
+    #>   ..$ : num 1
+    #>   ..$ : num 2
+    #>  $ : num [1:2] 3 4
+    str(l5)
+
+    ## List of 4
+    ##  $ : num 1
+    ##  $ : num 2
+    ##  $ : num 3
+    ##  $ : num 4
+
+    #> List of 4
+    #>  $ : num 1
+    #>  $ : num 2
+    #>  $ : num 3
+    #>  $ : num 4
+
+3.5.2 Testing and Coercion
+
+is.list(): test for a list as.list(): coerce to a list
+
+    list(1:3)
+
+    ## [[1]]
+    ## [1] 1 2 3
+
+    #> [[1]]
+    #> [1] 1 2 3
+    as.list(1:3)
+
+    ## [[1]]
+    ## [1] 1
+    ## 
+    ## [[2]]
+    ## [1] 2
+    ## 
+    ## [[3]]
+    ## [1] 3
+
+    #> [[1]]
+    #> [1] 1
+    #> 
+    #> [[2]]
+    #> [1] 2
+    #> 
+    #> [[3]]
+    #> [1] 3
+
+unlist(): turn a list into an atomic vector
+
+3.5.3 Matrices and Arrays
+
+With atomic vectors, the dimension attribute is commonly used to create
+matrices. With lists, the dimension attribute can be used to create
+list-matrices or list-arrays:
+
+    l <- list(1:3, "a", TRUE, 1.0)
+    dim(l) <- c(2, 2)
+    l
+
+    ##      [,1]      [,2]
+    ## [1,] integer,3 TRUE
+    ## [2,] "a"       1
+
+    #>      [,1]      [,2]
+    #> [1,] Integer,3 TRUE
+    #> [2,] "a"       1
+
+    l[[1, 1]]
+
+    ## [1] 1 2 3
+
+    #> [1] 1 2 3
+
+These data structures are relatively esoteric but they can be useful if
+you want to arrange objects in a grid-like structure. For example, if
+you’re running models on a spatio-temporal grid, it might be more
+intuitive to store the models in a 3D array that matches the grid
+structure.
+
+3.5.4 Exercises
+
+1.  List all the ways that a list differs from an atomic vector. A list
+    can have different types, but an atomic vector must have all the
+    same types. A list is references to objects, but an atomic vector is
+    the actual objects.
+
+2.  Why do you need to use unlist() to convert a list to an atomic
+    vector? Why doesn’t as.vector() work? ?
+
+<!-- -->
+
+    l1 <- list(
+        1:3,
+        "a",
+        c(T, F, T),
+        c(2.3, 5.9)
+    )
+
+    unlist(l1)
+
+    ## [1] "1"     "2"     "3"     "a"     "TRUE"  "FALSE" "TRUE"  "2.3"   "5.9"
+
+    as.vector(l1)
+
+    ## [[1]]
+    ## [1] 1 2 3
+    ## 
+    ## [[2]]
+    ## [1] "a"
+    ## 
+    ## [[3]]
+    ## [1]  TRUE FALSE  TRUE
+    ## 
+    ## [[4]]
+    ## [1] 2.3 5.9
+
+1.  Compare and contrast c() and unlist() when combining a dat and
+    date-time into a single vector. ?
+
+3.6 Data Frames and Tibbles
+
+Two most important S3 vectors built on top of lists: data frames and
+tibbles.
+
+If you do data analysis in R, you’re going to be using data frames. A
+data frame is a named list of vectors with attributes for (column)
+names, row.names29, and its class, “data.frame”:
+
+    df1 <- data.frame(x = 1:3, y = letters[1:3])
+    typeof(df1)
+
+    ## [1] "list"
+
+    #> [1] "list"
+
+    attributes(df1)
+
+    ## $names
+    ## [1] "x" "y"
+    ## 
+    ## $class
+    ## [1] "data.frame"
+    ## 
+    ## $row.names
+    ## [1] 1 2 3
+
+    #> $names
+    #> [1] "x" "y"
+    #> 
+    #> $class
+    #> [1] "data.frame"
+    #> 
+    #> $row.names
+    #> [1] 1 2 3
+
+A data frame is different from a list in that the length of each of its
+vectors must be the same. They share properties of both matrices and
+lists:
+
+A data frame has rownames()30 and colnames(). The names() of a data
+frame are the column names.
+
+A data frame has nrow() rows and ncol() columns. The length() of a data
+frame gives the number of columns.
+
+tibble: modern reimagining of a data frame, provided by tibble package
+Tibbles are different from data frames in that the class vector is
+longer and includes tbl\_df.
+
+    library(tibble)
+
+    ## Warning: package 'tibble' was built under R version 4.1.2
+
+    df2 <- tibble(x = 1:3, y = letters[1:3])
+    typeof(df2)
+
+    ## [1] "list"
+
+    #> [1] "list"
+
+    attributes(df2)
+
+    ## $class
+    ## [1] "tbl_df"     "tbl"        "data.frame"
+    ## 
+    ## $row.names
+    ## [1] 1 2 3
+    ## 
+    ## $names
+    ## [1] "x" "y"
+
+    #> $names
+    #> [1] "x" "y"
+    #> 
+    #> $row.names
+    #> [1] 1 2 3
+    #> 
+    #> $class
+    #> [1] "tbl_df"     "tbl"        "data.frame"
+
+3.6.1 Creating
+
+data.frame(): use to create data frame by supplying name-vector pairs
+
+    df <- data.frame(
+      x = 1:3, 
+      y = c("a", "b", "c")
+    )
+    str(df)
+
+    ## 'data.frame':    3 obs. of  2 variables:
+    ##  $ x: int  1 2 3
+    ##  $ y: chr  "a" "b" "c"
+
+    #> 'data.frame':    3 obs. of  2 variables:
+    #>  $ x: int  1 2 3
+    #>  $ y: chr  "a" "b" "c"
+
+Beware of the default conversion of strings to factors. Use
+stringsAsFactors = FALSE to suppress this and keep character vectors as
+character vectors:
+
+    df1 <- data.frame(
+      x = 1:3,
+      y = c("a", "b", "c"),
+      stringsAsFactors = FALSE
+    )
+    str(df1)
+
+    ## 'data.frame':    3 obs. of  2 variables:
+    ##  $ x: int  1 2 3
+    ##  $ y: chr  "a" "b" "c"
+
+    #> 'data.frame':    3 obs. of  2 variables:
+    #>  $ x: int  1 2 3
+    #>  $ y: chr  "a" "b" "c"
+
+Create a tibble similarly to a data frame. The main difference is that
+tibbles never coerce their input.
+
+    df2 <- tibble(
+      x = 1:3, 
+      y = c("a", "b", "c")
+    )
+    str(df2)
+
+    ## tibble [3 x 2] (S3: tbl_df/tbl/data.frame)
+    ##  $ x: int [1:3] 1 2 3
+    ##  $ y: chr [1:3] "a" "b" "c"
+
+    #> tibble [3 × 2] (S3: tbl_df/tbl/data.frame)
+    #>  $ x: int [1:3] 1 2 3
+    #>  $ y: chr [1:3] "a" "b" "c"
+
+Data frames automatically transform non-syntactic names (unless
+check.names = FALSE), tibbles do not.
+
+    names(data.frame(`1` = 1))
+
+    ## [1] "X1"
+
+    #> [1] "X1"
+
+    names(tibble(`1` = 1))
+
+    ## [1] "1"
+
+    #> [1] "1"
+
+While every element of a data frame (or tibble) must have the same
+length, both data.frame() and tibble() will recycle shorter inputs.
+However, while data frames automatically recycle columns that are an
+integer multiple of the longest column, tibbles will only recycle
+vectors of length one.
+
+    #data.frame(x = 1:4, y = 1:2)
+    #>   x y
+    #> 1 1 1
+    #> 2 2 2
+    #> 3 3 1
+    #> 4 4 2
+    #data.frame(x = 1:4, y = 1:3)
+    #> Error in data.frame(x = 1:4, y = 1:3): arguments imply differing number of
+    #> rows: 4, 3
+
+    #tibble(x = 1:4, y = 1)
+    #> # A tibble: 4 x 2
+    #>       x     y
+    #>   <int> <dbl>
+    #> 1     1     1
+    #> 2     2     1
+    #> 3     3     1
+    #> 4     4     1
+    #tibble(x = 1:4, y = 1:2)
+    #> Error: Tibble columns must have compatible sizes.
+    #> * Size 4: Existing data.
+    #> * Size 2: Column `y`.
+    #> ℹ Only values of size one are recycled.
+
+As opposed to data frames, tibble() allows you to refer to variables
+created during construction.
+
+    tibble(
+      x = 1:3,
+      y = x * 2
+    )
+
+    ## # A tibble: 3 x 2
+    ##       x     y
+    ##   <int> <dbl>
+    ## 1     1     2
+    ## 2     2     4
+    ## 3     3     6
+
+    #> # A tibble: 3 x 2
+    #>       x     y
+    #>   <int> <dbl>
+    #> 1     1     2
+    #> 2     2     4
+    #> 3     3     6
+
+3.6.2 Row Names
+
+Data frames allow you to label each row with a name, a character vector
+containing only unique values:
+
+    df3 <- data.frame(
+      age = c(35, 27, 18),
+      hair = c("blond", "brown", "black"),
+      row.names = c("Bob", "Susan", "Sam")
+    )
+    df3
+
+    ##       age  hair
+    ## Bob    35 blond
+    ## Susan  27 brown
+    ## Sam    18 black
+
+    #>       age  hair
+    #> Bob    35 blond
+    #> Susan  27 brown
+    #> Sam    18 black
+
+You can get and set row names with rownames() and you can se them to
+sebset rows.
+
+    rownames(df3)
+
+    ## [1] "Bob"   "Susan" "Sam"
+
+    #> [1] "Bob"   "Susan" "Sam"
+
+    df3["Bob", ]
+
+    ##     age  hair
+    ## Bob  35 blond
+
+    #>     age  hair
+    #> Bob  35 blond
+
+Row names arise naturally if you think of data frames as 2D structures
+like matrices: columns (variables) have names so rows (observations)
+should too. Most matrices are numeric, so having a place to store
+character labels is important. But this analogy to matrices is
+misleading because matrices possess an important property that data
+frames do not: they are transposable. In matrices the rows and columns
+are interchangeable, and transposing a matrix gives you another matrix
+(transposing again gives you the original matrix). With data frames,
+however, the rows and columns are not interchangeable: the transpose of
+a data frame is not a data frame.
+
+There are three reasons why row names are undesirable:
+
+Metadata is data, so storing it in a different way to the rest of the
+data is fundamentally a bad idea. It also means that you need to learn a
+new set of tools to work with row names; you can’t use what you already
+know about manipulating columns.
+
+Row names are a poor abstraction for labelling rows because they only
+work when a row can be identified by a single string. This fails in many
+cases, for example when you want to identify a row by a non-character
+vector (e.g. a time point), or with multiple vectors (e.g. position,
+encoded by latitude and longitude).
+
+Row names must be unique, so any duplication of rows (e.g. from
+bootstrapping) will create new row names. If you want to match rows from
+before and after the transformation, you’ll need to perform complicated
+string surgery.
+
+    df3[c(1, 1, 1), ]
+
+    ##       age  hair
+    ## Bob    35 blond
+    ## Bob.1  35 blond
+    ## Bob.2  35 blond
+
+    #>       age  hair
+    #> Bob    35 blond
+    #> Bob.1  35 blond
+    #> Bob.2  35 blond
+
+For these reasons, tibbles do not support row names. Instead the tibble
+package provides tools to easily convert row names into a regular column
+with either rownames\_to\_column(), or the rownames argument in
+as\_tibble():
+
+    as_tibble(df3, rownames = "name")
+
+    ## # A tibble: 3 x 3
+    ##   name    age hair 
+    ##   <chr> <dbl> <chr>
+    ## 1 Bob      35 blond
+    ## 2 Susan    27 brown
+    ## 3 Sam      18 black
+
+    #> # A tibble: 3 x 3
+    #>   name    age hair 
+    #>   <chr> <dbl> <chr>
+    #> 1 Bob      35 blond
+    #> 2 Susan    27 brown
+    #> 3 Sam      18 black
+
+3.6.3 Printing
+
+One of the most obvious differences between tibbles and data frames is
+how they print. I assume that you’re already familiar with how data
+frames are printed, so here I’ll highlight some of the biggest
+differences using an example dataset included in the dplyr package:
+
+    dplyr::starwars
+
+    ## # A tibble: 87 x 14
+    ##    name    height  mass hair_color  skin_color eye_color birth_year sex   gender
+    ##    <chr>    <int> <dbl> <chr>       <chr>      <chr>          <dbl> <chr> <chr> 
+    ##  1 Luke S~    172    77 blond       fair       blue            19   male  mascu~
+    ##  2 C-3PO      167    75 <NA>        gold       yellow         112   none  mascu~
+    ##  3 R2-D2       96    32 <NA>        white, bl~ red             33   none  mascu~
+    ##  4 Darth ~    202   136 none        white      yellow          41.9 male  mascu~
+    ##  5 Leia O~    150    49 brown       light      brown           19   fema~ femin~
+    ##  6 Owen L~    178   120 brown, grey light      blue            52   male  mascu~
+    ##  7 Beru W~    165    75 brown       light      blue            47   fema~ femin~
+    ##  8 R5-D4       97    32 <NA>        white, red red             NA   none  mascu~
+    ##  9 Biggs ~    183    84 black       light      brown           24   male  mascu~
+    ## 10 Obi-Wa~    182    77 auburn, wh~ fair       blue-gray       57   male  mascu~
+    ## # ... with 77 more rows, and 5 more variables: homeworld <chr>, species <chr>,
+    ## #   films <list>, vehicles <list>, starships <list>
+
+    #> # A tibble: 87 x 14
+    #>    name  height  mass hair_color skin_color eye_color birth_year sex   gender
+    #>    <chr>  <int> <dbl> <chr>      <chr>      <chr>          <dbl> <chr> <chr> 
+    #>  1 Luke…    172    77 blond      fair       blue            19   male  mascu…
+    #>  2 C-3PO    167    75 <NA>       gold       yellow         112   none  mascu…
+    #>  3 R2-D2     96    32 <NA>       white, bl… red             33   none  mascu…
+    #>  4 Dart…    202   136 none       white      yellow          41.9 male  mascu…
+    #>  5 Leia…    150    49 brown      light      brown           19   fema… femin…
+    #>  6 Owen…    178   120 brown, gr… light      blue            52   male  mascu…
+    #>  7 Beru…    165    75 brown      light      blue            47   fema… femin…
+    #>  8 R5-D4     97    32 <NA>       white, red red             NA   none  mascu…
+    #>  9 Bigg…    183    84 black      light      brown           24   male  mascu…
+    #> 10 Obi-…    182    77 auburn, w… fair       blue-gray       57   male  mascu…
+    #> # … with 77 more rows, and 5 more variables: homeworld <chr>, species <chr>,
+    #> #   films <list>, vehicles <list>, starships <list>
+
+Tibbles only show the first 10 rows and all the columns that will fit on
+screen. Additional columns are shown at the bottom.
+
+Each column is labelled with its type, abbreviated to three or four
+letters.
+
+Wide columns are truncated to avoid having a single long string occupy
+an entire row. (This is still a work in progress: it’s a tricky tradeoff
+between showing as many columns as possible and showing columns in their
+entirety.)
+
+When used in console environments that support it, colour is used
+judiciously to highlight important information, and de-emphasise
+supplemental details.
+
+3.6.4 Subsetting
+
+In my opinion, data frames have two undesirable subsetting behaviours:
+
+When you subset columns with df\[, vars\], you will get a vector if vars
+selects one variable, otherwise you’ll get a data frame. This is a
+frequent source of bugs when using \[ in a function, unless you always
+remember to use df\[, vars, drop = FALSE\].
+
+When you attempt to extract a single column with
+df*x**a**n**d**t**h**e**r**e**i**s**n**o**c**o**l**u**m**n**x*, *a**d**a**t**a**f**r**a**m**e**w**i**l**l**i**n**s**t**e**a**d**s**e**l**e**c**t**a**n**y**v**a**r**i**a**b**l**e**t**h**a**t**s**t**a**r**t**s**w**i**t**h**x*.*I**f**n**o**v**a**r**i**a**b**l**e**s**t**a**r**t**s**w**i**t**h**x*, *d**f*x
+will return NULL. This makes it easy to select the wrong variable or to
+select a variable that doesn’t exist.
+
+-Tibbles tweak these behaviours so that a \[ always returns a tibble,
+and a $ doesn’t do partial matching and warns if it can’t find a
+variable (this is what makes tibbles surly).
+
+    df1 <- data.frame(xyz = "a")
+    df2 <- tibble(xyz = "a")
+
+    str(df1$x)
+
+    ##  chr "a"
+
+    #>  chr "a"
+    str(df2$x)
+
+    ## Warning: Unknown or uninitialised column: `x`.
+
+    ##  NULL
+
+    #> Warning: Unknown or uninitialised column: `x`.
+    #>  NULL
+
+A tibble’s insistence on returning a data frame from \[ can cause
+problems with legacy code, which often uses df\[, “col”\] to extract a
+single column. If you want a single column, I recommend using
+df\[\[“col”\]\]. This clearly communicates your intent, and works with
+both data frames and tibbles.
+
+3.6.5 Testing and Coercing
+
+is.data.frame(): use to test if an object is a data frame or a tibble
+
+    is.data.frame(df1)
+
+    ## [1] TRUE
+
+    #> [1] TRUE
+    is.data.frame(df2)
+
+    ## [1] TRUE
+
+    #> [1] TRUE
+
+Typically, it should not matter if you have a tibble or data frame, but
+if you need to be certain, use is\_tibble():
+
+    is_tibble(df1)
+
+    ## [1] FALSE
+
+    #> [1] FALSE
+    is_tibble(df2)
+
+    ## [1] TRUE
+
+    #> [1] TRUE
+
+as.data.frame(): coerce to a data frame as\_tibble(): coerce to a tibble
+
+3.6.6 List Columns
+
+Since a data frame is a list of vectors, it is possible for a data frame
+to have a column that is a list. This is very useful because a list can
+contain any other object: this means you can put any object in a data
+frame. This allows you to keep related objects together in a row, no
+matter how complex the individual objects are.
+
+List-columns are allowed in data frames but you have to do a little
+extra work by either adding the list-column after creation or wrapping
+the list in I()32.
+
+    df <- data.frame(x = 1:3)
+    df$y <- list(1:2, 1:3, 1:4)
+
+    data.frame(
+      x = 1:3, 
+      y = I(list(1:2, 1:3, 1:4))
+    )
+
+    ##   x          y
+    ## 1 1       1, 2
+    ## 2 2    1, 2, 3
+    ## 3 3 1, 2, 3, 4
+
+    #>   x          y
+    #> 1 1       1, 2
+    #> 2 2    1, 2, 3
+    #> 3 3 1, 2, 3, 4
+
+List columns are easier to use with tibbles because they can be directly
+included inside tibble() and they will be printed tidily:
+
+    tibble(
+      x = 1:3, 
+      y = list(1:2, 1:3, 1:4)
+    )
+
+    ## # A tibble: 3 x 2
+    ##       x y        
+    ##   <int> <list>   
+    ## 1     1 <int [2]>
+    ## 2     2 <int [3]>
+    ## 3     3 <int [4]>
+
+    #> # A tibble: 3 x 2
+    #>       x y        
+    #>   <int> <list>   
+    #> 1     1 <int [2]>
+    #> 2     2 <int [3]>
+    #> 3     3 <int [4]>
+
+3.6.7 Matrix and Data Frame Columns
+
+As long as the number of rows matches the data frame, it’s also possible
+to have a matrix or array as a column of a data frame. (This requires a
+slight extension to our definition of a data frame: it’s not the
+length() of each column that must be equal, but the NROW().) As for
+list-columns, you must either add it after creation, or wrap it in I().
+
+    dfm <- data.frame(
+      x = 1:3 * 10
+    )
+    dfm$y <- matrix(1:9, nrow = 3)
+    dfm$z <- data.frame(a = 3:1, b = letters[1:3], stringsAsFactors = FALSE)
+
+    str(dfm)
+
+    ## 'data.frame':    3 obs. of  3 variables:
+    ##  $ x: num  10 20 30
+    ##  $ y: int [1:3, 1:3] 1 2 3 4 5 6 7 8 9
+    ##  $ z:'data.frame':   3 obs. of  2 variables:
+    ##   ..$ a: int  3 2 1
+    ##   ..$ b: chr  "a" "b" "c"
+
+    #> 'data.frame':    3 obs. of  3 variables:
+    #>  $ x: num  10 20 30
+    #>  $ y: int [1:3, 1:3] 1 2 3 4 5 6 7 8 9
+    #>  $ z:'data.frame':   3 obs. of  2 variables:
+    #>   ..$ a: int  3 2 1
+    #>   ..$ b: chr  "a" "b" "c"
+
+Matrix and data frame columns require a little caution. Many functions
+that work with data frames assume that all columns are vectors. Also,
+the printed display can be confusing.
+
+    dfm[1, ]
+
+    ##    x y.1 y.2 y.3 z.a z.b
+    ## 1 10   1   4   7   3   a
+
+    #>    x y.1 y.2 y.3 z.a z.b
+    #> 1 10   1   4   7   3   a
+
+3.6.8 Exercises
+
+1.  Can you have a data frame with zero rows? What about zero columns?
+
+2.  What happens if you attempt to set rownames that are not unique?
+
+3.  If df is a data frame, what can you say about t(df) and t(t(df))?
+    Perform some experiments, making sure to try different column types.
+
+4.  What does as.matrix() do when applied to a data frame with columns
+    of different types? How does it differ from data.matrix()?
+
+3.7 NULL
+
+NULL is special because it has a unique type, its length is always 0,
+and it can’t have any attributes.
+
+    #typeof(NULL)
+    #> [1] "NULL"
+
+    #length(NULL)
+    #> [1] 0
+
+    #x <- NULL
+    #attr(x, "y") <- 1
+    #> Error in attr(x, "y") <- 1: attempt to set an attribute on NULL
+
+is.null(): use to test for NULL
+
+    is.null(NULL)
+
+    ## [1] TRUE
+
+    #> [1] TRUE
+
+There are two common uses of NULL:
+
+To represent an empty vector (a vector of length zero) of arbitrary
+type. For example, if you use c() but don’t include any arguments, you
+get NULL, and concatenating NULL to a vector will leave it unchanged:
+
+    c()
+
+    ## NULL
+
+    #> NULL
+
+To represent an absent vector. For example, NULL is often used as a
+default function argument, when the argument is optional but the default
+value requires some computation (see Section 6.5.3 for more on this).
+Contrast this with NA which is used to indicate that an element of a
+vector is absent.
+
+3.8 QUIZ ANSWERS
+
+1.  The four common types of atomic vector are logical, integer, double
+    and character. The two rarer types are complex and raw.
+
+2.  Attributes allow you to associate arbitrary additional metadata to
+    any object. You can get and set individual attributes with attr(x,
+    “y”) and attr(x, “y”) &lt;- value; or you can get and set all
+    attributes at once with attributes().
+
+3.  The elements of a list can be any type (even a list); the elements
+    of an atomic vector are all of the same type. Similarly, every
+    element of a matrix must be the same type; in a data frame,
+    different columns can have different types.
+
+4.  You can make a list-array by assigning dimensions to a list. You can
+    make a matrix a column of a data frame with df$x &lt;- matrix(), or
+    by using I() when creating a new data frame data.frame(x =
+    I(matrix())).
+
+5.  Tibbles have an enhanced print method, never coerce strings to
+    factors, and provide stricter subsetting methods.
