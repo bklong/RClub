@@ -26,7 +26,7 @@ Quiz
 
 4.2.1 Atomic Vectors
 
-\*\* note that the number after the decimal point represents the
-original position in the vector \*\*
+**note that the number after the decimal point represents the original
+position in the vector**
 
     x <- c(2.1, 4.2, 3.3, 5.4)
