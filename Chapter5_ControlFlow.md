@@ -239,7 +239,8 @@ double/integer, character, and logical vectors respectively
 
     #> [1] "empty"
 
-**I need help with this one!**
+**Something to do with 1:10 versus numeric()…one is empty and one is
+not**
 
 ## 5.3 Loops
 
@@ -388,7 +389,9 @@ while is more flexible than for, and repeat is more flexible than while.
     ## [[1]]
     ## [1] NA
 
-**I need help with this one!**
+**The vector has a length of 0 (numeric()), and therefore as the
+iterations run through, you get NA, and then NA^2, which is still just
+NA…there are no mistakes in the code, it still runs okay.**
 
 1.  When the following code is evaluated, what can you say about the
     vector being iterated?
@@ -406,6 +409,9 @@ while is more flexible than for, and repeat is more flexible than while.
     #> [1] 1 2 3 2 4 6
 
 The vector is an integer or double atomic vector?
+
+**The below explanation for number 3 might be the explanation for this
+one, I can’t remember.**
 
 1.  What does the following code tell you about when the index is
     updated?
@@ -428,6 +434,14 @@ The vector is an integer or double atomic vector?
 Index? I can tell that the original number (vector 1-3) is multiplied by
 2, which is renamed as i. So, 1x2 = 2, 2x2 = 4, and 3x2 = 6, which are
 our three outputs.
+
+**John explanation from club meeting: The index is updated after each
+iteration. 1x2 = 2, and then that output is added to the end of the
+vector, which increases the vector length from 3 to 4. This continues
+for each iteration. 2x2 = 4, which is added to the vector to make it 5
+in length. The for loop, however, does not iterate through those added
+values. It only iterates through the original values of the vector
+(1-3).**
 
 ## Quiz
 
