@@ -219,6 +219,8 @@ recommend using switch() only with character inputs.
 
     ## [1] NA
 
+double/integer, character, and logical vectors respectively
+
 1.  Why does the following code work?
 
 <!-- -->
@@ -236,6 +238,8 @@ recommend using switch() only with character inputs.
     ## [1] "empty"
 
     #> [1] "empty"
+
+**I need help with this one!**
 
 ## 5.3 Loops
 
@@ -384,6 +388,8 @@ while is more flexible than for, and repeat is more flexible than while.
     ## [[1]]
     ## [1] NA
 
+**I need help with this one!**
+
 1.  When the following code is evaluated, what can you say about the
     vector being iterated?
 
@@ -398,6 +404,8 @@ while is more flexible than for, and repeat is more flexible than while.
     ## [1] 1 2 3 2 4 6
 
     #> [1] 1 2 3 2 4 6
+
+The vector is an integer or double atomic vector?
 
 1.  What does the following code tell you about when the index is
     updated?
@@ -416,6 +424,10 @@ while is more flexible than for, and repeat is more flexible than while.
     #> [1] 2
     #> [1] 4
     #> [1] 6
+
+Index? I can tell that the original number (vector 1-3) is multiplied by
+2, which is renamed as i. So, 1x2 = 2, 2x2 = 4, and 3x2 = 6, which are
+our three outputs.
 
 ## Quiz
 
